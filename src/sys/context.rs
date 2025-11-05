@@ -32,4 +32,12 @@ impl OBContext {
 
         Ok(OBDeviceList::new(device_list))
     }
+
+    pub fn enable_net_device_enumeration(&self, enable: bool) -> Result<(), OBError> {
+        let mut err_ptr = std::ptr::null_mut();
+
+        unsafe { orb::ob_enable_net_device_enumeration(self.inner, enable, &mut err_ptr) };
+
+        OBError::consume(err_ptr)
+    }
 }
