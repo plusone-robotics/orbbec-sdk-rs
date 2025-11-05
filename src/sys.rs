@@ -22,7 +22,7 @@ mod orb {
 pub fn set_logger_severity(level: isize) {
 
     unsafe {
-        orb::ob_set_logger_severity(level, std::ptr::null_mut());
+        orb::ob_set_logger_severity(level.try_into().unwrap(), std::ptr::null_mut());
     }
 }
 
