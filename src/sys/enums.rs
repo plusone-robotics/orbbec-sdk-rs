@@ -697,7 +697,7 @@ pub enum OBLogSeverity {
     /// Info level
     Info = orb::OBLogSeverity_OB_LOG_SEVERITY_INFO as isize,
     /// Warning level
-    Warning = orb::OBLogSeverity_OB_LOG_SEVERITY_WARNING as isize,
+    Warning = orb::OBLogSeverity_OB_LOG_SEVERITY_WARN as isize,
     /// Error level
     Error = orb::OBLogSeverity_OB_LOG_SEVERITY_ERROR as isize,
     /// Fatal level
