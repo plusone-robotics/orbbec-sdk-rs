@@ -82,6 +82,13 @@ impl Context {
 
         Ok(device::DeviceList::new(list, self))
     }
+
+    /// Enable or disable network device enumeration
+    pub fn enable_net_device_enumeration(&self, enable: bool) -> Result<(), error::OrbbecError> {
+        self.inner
+            .enable_net_device_enumeration(enable)
+            .map_err(error::OrbbecError::from)
+    }
 }
 
 impl Drop for Context {
