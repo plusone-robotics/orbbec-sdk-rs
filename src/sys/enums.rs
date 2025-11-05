@@ -690,3 +690,16 @@ pub enum OBCoordinateSystem {
     /// Right Handed Coordinate System
     RightHanded = orb::OB_COORDINATE_SYSTEM_TYPE_OB_RIGHT_HAND_COORDINATE_SYSTEM as isize,
 }
+
+pub enum OBLogLevel {
+    /// Debug level
+    Debug = orb::OBLogLevel_OB_LOG_LEVEL_DEBUG as isize,
+    /// Info level
+    Info = orb::OBLogLevel_OB_LOG_LEVEL_INFO as isize,
+    /// Warning level
+    Warning = orb::OBLogLevel_OB_LOG_LEVEL_WARNING as isize,
+    /// Error level
+    Error = orb::OBLogLevel_OB_LOG_LEVEL_ERROR as isize,
+    /// Fatal level
+    Fatal = orb::OBLogLevel_OB_LOG_LEVEL_FATAL as isize,
+}

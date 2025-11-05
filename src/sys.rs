@@ -19,6 +19,13 @@ mod orb {
     include!("../bindings/bindings.rs");
 }
 
+// Allow user to set logger level
+pub fn set_logger_severity(level: orb::OBLogLevel) {
+    unsafe {
+        orb::ob_set_logger_severity(level);
+    }
+}
+
 macro_rules! drop_ob_object {
     ($name:ident, $delete_fn:ident) => {
         impl Drop for $name {
