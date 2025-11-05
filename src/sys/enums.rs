@@ -691,15 +691,15 @@ pub enum OBCoordinateSystem {
     RightHanded = orb::OB_COORDINATE_SYSTEM_TYPE_OB_RIGHT_HAND_COORDINATE_SYSTEM as isize,
 }
 
-pub enum OBLogLevel {
+pub enum OBLogSeverity {
     /// Debug level
-    Debug = orb::OBLogLevel_OB_LOG_LEVEL_DEBUG as isize,
+    Debug = orb::OBLogSeverity_OB_LOG_SEVERITY_DEBUG as isize,
     /// Info level
-    Info = orb::OBLogLevel_OB_LOG_LEVEL_INFO as isize,
+    Info = orb::OBLogSeverity_OB_LOG_SEVERITY_INFO as isize,
     /// Warning level
-    Warning = orb::OBLogLevel_OB_LOG_LEVEL_WARNING as isize,
+    Warning = orb::OBLogSeverity_OB_LOG_SEVERITY_WARNING as isize,
     /// Error level
-    Error = orb::OBLogLevel_OB_LOG_LEVEL_ERROR as isize,
+    Error = orb::OBLogSeverity_OB_LOG_SEVERITY_ERROR as isize,
     /// Fatal level
-    Fatal = orb::OBLogLevel_OB_LOG_LEVEL_FATAL as isize,
+    Fatal = orb::OBLogSeverity_OB_LOG_SEVERITY_FATAL as isize,
 }

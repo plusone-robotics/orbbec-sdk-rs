@@ -20,9 +20,10 @@ mod orb {
 }
 
 // Allow user to set logger level
-pub fn set_logger_severity(level: orb::OBLogLevel) {
+pub fn set_logger_severity(level: orb::OBLogSeverity) {
+
     unsafe {
-        orb::ob_set_logger_severity(level);
+        orb::ob_set_logger_severity(level, std::ptr::null_mut());
     }
 }
 
