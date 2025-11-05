@@ -693,13 +693,13 @@ pub enum OBCoordinateSystem {
 
 pub enum OBLogSeverity {
     /// Debug level
-    Debug = orb::OBLogSeverity_OB_LOG_SEVERITY_DEBUG as i32,
+    Debug = orb::OBLogSeverity_OB_LOG_SEVERITY_DEBUG as isize,
     /// Info level
-    Info = orb::OBLogSeverity_OB_LOG_SEVERITY_INFO as i32,
+    Info = orb::OBLogSeverity_OB_LOG_SEVERITY_INFO as isize,
     /// Warning level
-    Warning = orb::OBLogSeverity_OB_LOG_SEVERITY_WARN as i32,
+    Warning = orb::OBLogSeverity_OB_LOG_SEVERITY_WARN as isize,
     /// Error level
-    Error = orb::OBLogSeverity_OB_LOG_SEVERITY_ERROR as i32,
+    Error = orb::OBLogSeverity_OB_LOG_SEVERITY_ERROR as isize,
     /// Fatal level
-    Fatal = orb::OBLogSeverity_OB_LOG_SEVERITY_FATAL as i32,
+    Fatal = orb::OBLogSeverity_OB_LOG_SEVERITY_FATAL as isize,
 }
