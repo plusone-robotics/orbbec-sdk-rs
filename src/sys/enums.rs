@@ -691,6 +691,8 @@ pub enum OBCoordinateSystem {
     RightHanded = orb::OB_COORDINATE_SYSTEM_TYPE_OB_RIGHT_HAND_COORDINATE_SYSTEM as isize,
 }
 
+/// Log Severity Level
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum OBLogSeverity {
     /// Debug level
     Debug = orb::OBLogSeverity_OB_LOG_SEVERITY_DEBUG as isize,
@@ -702,4 +704,19 @@ pub enum OBLogSeverity {
     Error = orb::OBLogSeverity_OB_LOG_SEVERITY_ERROR as isize,
     /// Fatal level
     Fatal = orb::OBLogSeverity_OB_LOG_SEVERITY_FATAL as isize,
+    /// Off (disable logging)
+    Off = orb::OBLogSeverity_OB_LOG_SEVERITY_OFF as isize,
+}
+
+impl From<OBLogSeverity> for orb::OBLogSeverity {
+    fn from(level: OBLogSeverity) -> Self {
+        match level {
+            OBLogSeverity::Debug => orb::OBLogSeverity_OB_LOG_SEVERITY_DEBUG,
+            OBLogSeverity::Info => orb::OBLogSeverity_OB_LOG_SEVERITY_INFO,
+            OBLogSeverity::Warning => orb::OBLogSeverity_OB_LOG_SEVERITY_WARN,
+            OBLogSeverity::Error => orb::OBLogSeverity_OB_LOG_SEVERITY_ERROR,
+            OBLogSeverity::Fatal => orb::OBLogSeverity_OB_LOG_SEVERITY_FATAL,
+            OBLogSeverity::Off => orb::OBLogSeverity_OB_LOG_SEVERITY_OFF,
+        }
+    }
 }

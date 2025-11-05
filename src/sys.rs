@@ -19,11 +19,11 @@ mod orb {
     include!("../bindings/bindings.rs");
 }
 use crate::sys::enums::OBLogSeverity;
-// Allow user to set logger level
-pub fn set_logger_severity(level: OBLogSeverity) {
 
+/// Allow user to set logger level
+pub fn set_logger_severity(level: OBLogSeverity) {
     unsafe {
-        orb::ob_set_logger_severity(level.try_into().unwrap(), std::ptr::null_mut());
+        orb::ob_set_logger_severity(level.into(), std::ptr::null_mut());
     }
 }
 
