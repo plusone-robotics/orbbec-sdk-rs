@@ -9,7 +9,8 @@ pub mod pipeline;
 pub mod stream;
 pub(crate) mod sys;
 
-use std::sync::atomic::AtomicBool;
+use std::sync::{Arc, Mutex, Weak};
+use std::sync::OnceLock;
 
 use sys::context::OBContext;
 
@@ -43,40 +44,75 @@ pub use crate::sys::enums::OBLogSeverity as LogSeverity;
 /// Set the logger severity level for the Orbbec SDK
 pub use crate::sys::set_logger_severity;
 
-/// There can only be a single context at a time
-/// C API does not enforce this, but having multiple contexts
-/// will lead to crashes and undefined behavior
-static CONTEXT_CREATED: AtomicBool = AtomicBool::new(false);
+/// Global context singleton similar to the C++ SDK implementation.
+/// 
+/// IMPORTANT:
+/// 1. Do NOT store the Arc<Context> for long-term use.
+/// 2. Always acquire the instance when needed and release it immediately.
+/// 3. For long-term storage (e.g., in member variables), use Weak<Context> instead
+///    of Arc<Context> to avoid potential lifetime and ownership issues.
+static GLOBAL_CONTEXT: OnceLock<Mutex<Weak<Context>>> = OnceLock::new();
 
-/// Context Manager
+/// Context Manager - Singleton pattern matching the C++ SDK
+/// 
+/// The Orbbec SDK uses a global singleton Context instance internally.
+/// This implementation provides thread-safe access to that singleton while
+/// following the same patterns as the C++ API.
+#[derive(Clone)]
 pub struct Context {
-    inner: OBContext,
+    inner: Arc<OBContext>,
 }
 
 impl Context {
-    /// Create a new context
-    pub fn new() -> Result<Self, error::OrbbecError> {
-        if CONTEXT_CREATED
-            .compare_exchange(
-                false,
-                true,
-                std::sync::atomic::Ordering::SeqCst,
-                std::sync::atomic::Ordering::SeqCst,
-            )
-            .is_err()
-        {
-            let err_data = error::OrbbecErrorData {
-                message: "A context already exists".to_string(),
-                function: "Context::new".to_string(),
-                args: "".to_string(),
-            };
-
-            return Err(error::OrbbecError::WrongAPICallSequence(err_data));
+    /// Returns a shared reference to the global Context instance.
+    /// 
+    /// ### Arguments
+    /// * `config_path` - Config file path. Used only on the first call when the Context is created.
+    /// 
+    /// ### Important Notes:
+    /// 1. Do NOT store this Arc<Context> for long-term use.
+    /// 2. Always acquire the instance when needed and release it immediately.
+    /// 3. If a long-term reference is required (e.g., in a member variable), store a 
+    ///    `std::sync::Weak<Context>` instead to avoid potential lifetime and ownership issues.
+    pub fn global_instance(config_path: Option<&str>) -> Result<Arc<Self>, error::OrbbecError> {
+        let global_mutex = GLOBAL_CONTEXT.get_or_init(|| Mutex::new(Weak::new()));
+        let mut global_weak = global_mutex.lock().unwrap();
+        
+        // Try to upgrade existing weak reference
+        if let Some(existing) = global_weak.upgrade() {
+            return Ok(existing);
         }
-
+        
+        // Create new context instance
+        let ob_context = if let Some(_path) = config_path {
+            // TODO: Add config path support to OBContext::new()
+            // For now, use default config
+            OBContext::new().map_err(error::OrbbecError::from)?
+        } else {
+            OBContext::new().map_err(error::OrbbecError::from)?
+        };
+        
+        let context = Arc::new(Context {
+            inner: Arc::new(ob_context),
+        });
+        
+        // Store weak reference
+        *global_weak = Arc::downgrade(&context);
+        
+        Ok(context)
+    }
+    
+    /// Create a new context (legacy method for backward compatibility)
+    /// 
+    /// ### Deprecated
+    /// Consider using `Context::global_instance()` instead for proper singleton behavior
+    /// matching the C++ SDK.
+    pub fn new() -> Result<Self, error::OrbbecError> {
         let ctx = OBContext::new().map_err(error::OrbbecError::from)?;
 
-        Ok(Context { inner: ctx })
+        Ok(Context { 
+            inner: Arc::new(ctx),
+        })
     }
 
     /// Query the list of connected devices
@@ -95,10 +131,12 @@ impl Context {
             .enable_net_device_enumeration(enable)
             .map_err(error::OrbbecError::from)
     }
-}
 
-impl Drop for Context {
-    fn drop(&mut self) {
-        CONTEXT_CREATED.store(false, std::sync::atomic::Ordering::SeqCst);
+    /// Create a weak reference to this context for long-term storage
+    /// 
+    /// Use this when you need to store a context reference in a struct or
+    /// for long-term use to avoid ownership issues, as recommended by Orbbec.
+    pub fn weak_ref(context: &Arc<Context>) -> Weak<Context> {
+        Arc::downgrade(context)
     }
 }

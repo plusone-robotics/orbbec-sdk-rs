@@ -7,6 +7,11 @@ pub struct OBFrame {
     inner: *mut orb::ob_frame,
 }
 
+// Frames contain immutable data that can be safely shared across threads
+// The C++ example shows frames being passed between threads via callbacks
+unsafe impl Send for OBFrame {}
+unsafe impl Sync for OBFrame {}
+
 drop_ob_object!(OBFrame, ob_delete_frame);
 
 impl OBFrame {
@@ -40,6 +45,17 @@ impl OBFrame {
         OBError::consume(err_ptr)?;
 
         Ok(format.into())
+    }
+
+    /// Get the timestamp of the frame in microseconds
+    pub fn get_timestamp_us(&self) -> Result<u64, OBError> {
+        let mut err_ptr = std::ptr::null_mut();
+
+        let timestamp = unsafe { orb::ob_frame_get_timestamp_us(self.inner, &mut err_ptr) };
+
+        OBError::consume(err_ptr)?;
+
+        Ok(timestamp)
     }
 
     /// Get the depth frame from the frameset.

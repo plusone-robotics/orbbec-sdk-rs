@@ -9,6 +9,10 @@ pub struct OBDeviceInfo {
     inner: *mut orb::ob_device_info,
 }
 
+// Device info is read-only data that can be safely shared across threads
+unsafe impl Send for OBDeviceInfo {}
+unsafe impl Sync for OBDeviceInfo {}
+
 drop_ob_object!(OBDeviceInfo, ob_delete_device_info);
 
 impl OBDeviceInfo {
@@ -145,6 +149,10 @@ pub struct OBDevice {
     inner: *mut orb::ob_device,
 }
 
+// Devices can be safely shared across threads as shown in C++ multi-device examples
+unsafe impl Send for OBDevice {}
+unsafe impl Sync for OBDevice {}
+
 drop_ob_object!(OBDevice, ob_delete_device);
 
 impl OBDevice {
@@ -272,10 +280,14 @@ impl OBDevice {
     }
 }
 
-/// List of devices
+/// A list of devices
 pub struct OBDeviceList {
     inner: *mut orb::ob_device_list,
 }
+
+// Device lists can be safely shared across threads for enumeration
+unsafe impl Send for OBDeviceList {}
+unsafe impl Sync for OBDeviceList {}
 
 drop_ob_object!(OBDeviceList, ob_delete_device_list);
 

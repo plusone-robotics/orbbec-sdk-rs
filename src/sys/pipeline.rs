@@ -5,10 +5,14 @@ use super::frame::OBFrame;
 use super::stream::{OBStreamProfile, OBStreamProfileList};
 use super::{OBError, drop_ob_object, orb};
 
-/// Pipeline Configuration
+/// Configuration for the pipeline
 pub struct OBConfig {
     inner: *mut orb::ob_config,
 }
+
+// Pipeline configurations can be safely shared across threads
+unsafe impl Send for OBConfig {}
+unsafe impl Sync for OBConfig {}
 
 drop_ob_object!(OBConfig, ob_delete_config);
 
@@ -44,6 +48,11 @@ impl OBConfig {
 pub struct OBPipeline {
     inner: *mut orb::ob_pipeline,
 }
+
+// Pipelines can run concurrently as demonstrated in C++ multi-device examples
+// Each device gets its own pipeline that runs independently
+unsafe impl Send for OBPipeline {}
+unsafe impl Sync for OBPipeline {}
 
 drop_ob_object!(OBPipeline, ob_delete_pipeline);
 
@@ -108,6 +117,50 @@ impl OBPipeline {
         let mut err_ptr = std::ptr::null_mut();
 
         unsafe { orb::ob_pipeline_start_with_config(self.inner, config.inner, &mut err_ptr) };
+
+        OBError::consume(err_ptr)
+    }
+
+    /// Start the pipeline with configuration and callback
+    /// The callback will be called for each frameset received
+    pub fn start_with_callback<F>(&self, config: &OBConfig, callback: F) -> Result<(), OBError>
+    where
+        F: Fn(OBFrame) + Send + 'static,
+    {
+        let mut err_ptr = std::ptr::null_mut();
+        
+        // Box the callback to pass it as user_data
+        let boxed_callback = Box::into_raw(Box::new(callback));
+
+        unsafe extern "C" fn trampoline<F>(
+            frameset: *mut orb::ob_frame,
+            user_data: *mut std::os::raw::c_void,
+        ) where
+            F: Fn(OBFrame) + Send + 'static,
+        {
+            let callback = unsafe { &*(user_data as *const F) };
+            let frame = OBFrame::new(frameset);
+            callback(frame);
+        }
+
+        unsafe {
+            orb::ob_pipeline_start_with_callback(
+                self.inner,
+                config.inner,
+                Some(trampoline::<F>),
+                boxed_callback as *mut std::os::raw::c_void,
+                &mut err_ptr,
+            )
+        };
+
+        OBError::consume(err_ptr)
+    }
+
+    /// Stop the pipeline
+    pub fn stop(&self) -> Result<(), OBError> {
+        let mut err_ptr = std::ptr::null_mut();
+
+        unsafe { orb::ob_pipeline_stop(self.inner, &mut err_ptr) };
 
         OBError::consume(err_ptr)
     }

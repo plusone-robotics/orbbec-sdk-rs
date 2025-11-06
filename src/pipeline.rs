@@ -26,7 +26,7 @@ impl Config {
     /// ### Arguments
     /// * `profile` - Stream profile to enable
     pub fn enable_stream_with_profile<S: StreamProfile>(
-        &mut self,
+        &self,
         profile: &S,
     ) -> Result<(), crate::error::OrbbecError> {
         self.inner
@@ -51,7 +51,7 @@ impl Pipeline {
     }
 
     /// Get the device associated with the pipeline
-    pub fn get_device(&mut self) -> Result<Device, crate::error::OrbbecError> {
+    pub fn get_device(&self) -> Result<Device, crate::error::OrbbecError> {
         let device = self
             .inner
             .get_device()
@@ -64,7 +64,7 @@ impl Pipeline {
     /// ### Arguments
     /// * `sensor` - Sensor type to get the stream profiles for
     pub fn get_stream_profiles(
-        &mut self,
+        &self,
         sensor: SensorType,
     ) -> Result<StreamProfileList, crate::error::OrbbecError> {
         let profile_list = self
@@ -79,16 +79,44 @@ impl Pipeline {
     /// Start the pipeline with the given configuration
     /// ### Arguments
     /// * `config` - Configuration to use for the pipeline
-    pub fn start(&mut self, config: &Config) -> Result<(), crate::error::OrbbecError> {
+    pub fn start(&self, config: &Config) -> Result<(), crate::error::OrbbecError> {
         self.inner
             .start_with_config(&config.inner)
+            .map_err(crate::error::OrbbecError::from)
+    }
+
+    /// Start the pipeline with the given configuration and callback function
+    /// The callback will be called for each frameset received from the device
+    /// ### Arguments
+    /// * `config` - Configuration to use for the pipeline
+    /// * `callback` - Function to call with each received frameset
+    pub fn start_with_callback<F>(
+        &self,
+        config: &Config,
+        callback: F,
+    ) -> Result<(), crate::error::OrbbecError>
+    where
+        F: Fn(FrameSet) + Send + 'static,
+    {
+        self.inner
+            .start_with_callback(&config.inner, move |frame| {
+                let frameset = FrameSet::from(frame);
+                callback(frameset);
+            })
+            .map_err(crate::error::OrbbecError::from)
+    }
+
+    /// Stop the pipeline
+    pub fn stop(&self) -> Result<(), crate::error::OrbbecError> {
+        self.inner
+            .stop()
             .map_err(crate::error::OrbbecError::from)
     }
 
     /// Set if frames should be synchronized
     /// ### Arguments
     /// * `enable` - `true` to enable frame synchronization, `false` to disable it
-    pub fn set_frame_sync(&mut self, enable: bool) -> Result<(), crate::error::OrbbecError> {
+    pub fn set_frame_sync(&self, enable: bool) -> Result<(), crate::error::OrbbecError> {
         let res = if enable {
             self.inner.enable_frame_sync()
         } else {
@@ -102,7 +130,7 @@ impl Pipeline {
     /// ### Arguments
     /// * `timeout` - Maximum time to wait for frames
     pub fn wait_for_frames(
-        &mut self,
+        &self,
         timeout: Duration,
     ) -> Result<Option<FrameSet>, crate::error::OrbbecError> {
         self.inner

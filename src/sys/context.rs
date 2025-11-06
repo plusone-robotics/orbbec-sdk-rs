@@ -8,6 +8,11 @@ pub struct OBContext {
     inner: *mut orb::ob_context,
 }
 
+// The Orbbec SDK supports concurrent access as demonstrated in their C++ multi-device examples.
+// Multiple pipelines can run concurrently with proper synchronization.
+unsafe impl Send for OBContext {}
+unsafe impl Sync for OBContext {}
+
 drop_ob_object!(OBContext, ob_delete_context);
 
 impl OBContext {

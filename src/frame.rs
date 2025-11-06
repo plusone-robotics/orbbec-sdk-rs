@@ -138,6 +138,13 @@ pub struct FrameSet {
 }
 
 impl FrameSet {
+    /// Get the timestamp of the frameset in microseconds
+    pub fn timestamp(&self) -> u64 {
+        // Unwrap is safe here because internal pointer is guaranteed to be valid
+        // SDK only returns error for this function if pointer is NULL
+        self.inner.get_timestamp_us().unwrap()
+    }
+
     /// Get the depth frame from the frameset
     pub fn get_depth_frame(&self) -> Result<Option<DepthFrame>, OrbbecError> {
         self.inner
