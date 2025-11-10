@@ -166,4 +166,26 @@ impl OBFrame {
 
         Ok(scale)
     }
+
+    /// Get the frame index (frame number)
+    pub fn get_index(&self) -> Result<u64, OBError> {
+        let mut err_ptr = std::ptr::null_mut();
+
+        let index = unsafe { orb::ob_frame_get_index(self.inner, &mut err_ptr) };
+
+        OBError::consume(err_ptr)?;
+
+        Ok(index)
+    }
+
+    /// Get the frame hardware timestamp in microseconds
+    pub fn get_timestamp_us(&self) -> Result<u64, OBError> {
+        let mut err_ptr = std::ptr::null_mut();
+
+        let timestamp = unsafe { orb::ob_frame_get_timestamp_us(self.inner, &mut err_ptr) };
+
+        OBError::consume(err_ptr)?;
+
+        Ok(timestamp)
+    }
 }
