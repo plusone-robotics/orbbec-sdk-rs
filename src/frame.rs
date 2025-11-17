@@ -39,6 +39,18 @@ macro_rules! impl_video_frame {
                 // Ref: https://github.com/orbbec/OrbbecSDK_v2/blob/815ae047cc977a1f7edd2b97b69ff6cd29f510b3/src/impl/Frame.cpp#L147
                 self.inner.get_format().unwrap()
             }
+
+            /// Get the frame index (frame number)
+            pub fn index(&self) -> u64 {
+                // Unwrap is safe here because internal pointer is guaranteed to be valid
+                self.inner.get_index().unwrap()
+            }
+
+            /// Get the frame hardware timestamp in microseconds
+            pub fn timestamp_us(&self) -> u64 {
+                // Unwrap is safe here because internal pointer is guaranteed to be valid
+                self.inner.get_timestamp_us().unwrap()
+            }
         }
 
         impl From<OBFrame> for $t {
