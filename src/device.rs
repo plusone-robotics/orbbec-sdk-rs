@@ -289,6 +289,18 @@ impl<'a> DeviceList<'a> {
 
         device.map(Device::new).map_err(OrbbecError::from)
     }
+
+    /// Get the serial number of the device at the specified index, without opening the device
+    /// ### Arguments
+    /// * `index` - The index of the device
+    pub fn serial_number(&self, index: usize) -> Result<String, OrbbecError> {
+        let sn = self
+            .inner
+            .get_device_serial_number(index as u32)
+            .map_err(OrbbecError::from)?;
+
+        Ok(sn.to_string_lossy().into_owned())
+    }
 }
 
 /// An iterator over the devices in a device list

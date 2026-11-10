@@ -317,4 +317,17 @@ impl OBDeviceList {
 
         Ok(OBDevice::new(device))
     }
+
+    /// Get the serial number of the device at the specified index, without opening the device
+    pub fn get_device_serial_number(&self, index: u32) -> Result<&CStr, OBError> {
+        let mut err_ptr = std::ptr::null_mut();
+
+        let sn = unsafe {
+            orb::ob_device_list_get_device_serial_number(self.inner, index, &mut err_ptr)
+        };
+
+        OBError::consume(err_ptr)?;
+
+        Ok(unsafe { CStr::from_ptr(sn) })
+    }
 }
